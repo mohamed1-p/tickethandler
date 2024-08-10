@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tickethandler.dto.TicketResolveResponse;
 import com.tickethandler.dto.TicketResolverDto;
 import com.tickethandler.dto.TicketResponse;
 import com.tickethandler.exception.ResourceNotFoundException;
@@ -147,7 +148,7 @@ public class TicketServiceImpl implements TicketService {
     
     
     @Transactional
-    public Ticket resolveTicketAndAddLog(Long ticketNo, int engineerId, String logDetails) {
+    public TicketResolveResponse resolveTicketAndAddLog(Long ticketNo, int engineerId, String logDetails) {
         Ticket ticket = ticketRepository.findById(ticketNo)
             .orElseThrow(() -> new RuntimeException("Ticket not found"));
         SupportEngineer engineer = supportEngineerRepository.findById(engineerId)
@@ -156,7 +157,7 @@ public class TicketServiceImpl implements TicketService {
         
         ticket.setResolvedBy(engineer);
         ticket.setResolutionDate(LocalDateTime.now());
-        TicketStatus resolvedStatus = ticketStatusRepository.findByStatusName("Resolved");
+        TicketStatus resolvedStatus = ticketStatusRepository.findByStatusName("closed");
             //.orElseThrow(() -> new RuntimeException("Resolved status not found"));
         ticket.setTicketStatus(resolvedStatus);
 
@@ -168,7 +169,14 @@ public class TicketServiceImpl implements TicketService {
         log.setLogDetails(logDetails);
 
         ticketsLogRepository.save(log);
-        return ticketRepository.save(ticket);
+        ticketRepository.save(ticket);
+       
+        TicketResolveResponse ticketResponse = new TicketResolveResponse();
+        ticketResponse.setTicketId(ticketNo);
+        ticketResponse.setTicketTypeId(ticket.getTicketType().getTypeId());
+        ticketResponse.setTicketSummary(ticket.getTicketSummary());
+        ticketResponse.setLogDetails(logDetails);
+        return ticketResponse;
     }
     
     

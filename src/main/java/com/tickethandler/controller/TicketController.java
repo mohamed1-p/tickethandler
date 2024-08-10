@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tickethandler.dto.ResolveTicketRequest;
 import com.tickethandler.dto.TicketRequestDTO;
+import com.tickethandler.dto.TicketResolveResponse;
 import com.tickethandler.dto.TicketResolverDto;
 import com.tickethandler.dto.TicketResponse;
 import com.tickethandler.model.Ticket;
@@ -68,8 +69,8 @@ public class TicketController {
     }
     
     @PutMapping("/{ticketNo}/resolve")
-    public ResponseEntity<Ticket> resolveTicketAndAddLog(@PathVariable Long ticketNo, @RequestBody ResolveTicketRequest request) {
-        Ticket resolvedTicket = ticketService.resolveTicketAndAddLog(
+    public ResponseEntity<TicketResolveResponse> resolveTicketAndAddLog(@PathVariable Long ticketNo, @RequestBody ResolveTicketRequest request) {
+    	TicketResolveResponse resolvedTicket = ticketService.resolveTicketAndAddLog(
             ticketNo,
             request.getEngineerId(),
             request.getLogDetails()
