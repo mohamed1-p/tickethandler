@@ -78,10 +78,10 @@ public class TicketServiceImpl implements TicketService {
         // Fetch the required entities from the repository
     	//validation to make sure the company and product are the same of requerster
         Requester requester = requesterRepository.findById(requesterId).orElseThrow(() -> new ResourceNotFoundException("Requester not found"));
-        Company company = companyRepository.findById(companyId).orElseThrow(() -> new RuntimeException("Company not found"));
-        TicketType ticketType = ticketTypeRepository.findById(ticketTypeId).orElseThrow(() -> new RuntimeException("Ticket Type not found"));
-        Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
-        TicketStatus ticketStatus = ticketStatusRepository.findById(1).orElseThrow(() -> new RuntimeException("Initial Ticket Status not found"));
+        Company company = companyRepository.findById(companyId).orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+        TicketType ticketType = ticketTypeRepository.findById(ticketTypeId).orElseThrow(() -> new ResourceNotFoundException("Ticket Type not found"));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        TicketStatus ticketStatus = ticketStatusRepository.findById(1).orElseThrow(() -> new ResourceNotFoundException("Initial Ticket Status not found"));
         //Company company = requester.getCompany();
         //int productId = companyProductsRepository.findProductIdByCompanyId(company.getCompanyId());
         //Product product = productRepository.findById(productId);
@@ -150,18 +150,18 @@ public class TicketServiceImpl implements TicketService {
     @Transactional
     public TicketResolveResponse resolveTicketAndAddLog(Long ticketNo, int engineerId, String logDetails) {
         Ticket ticket = ticketRepository.findById(ticketNo)
-            .orElseThrow(() -> new RuntimeException("Ticket not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
         SupportEngineer engineer = supportEngineerRepository.findById(engineerId)
-            .orElseThrow(() -> new RuntimeException("Support Engineer not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Support Engineer not found"));
 
         
         ticket.setResolvedBy(engineer);
         ticket.setResolutionDate(LocalDateTime.now());
         TicketStatus resolvedStatus = ticketStatusRepository.findByStatusName("closed");
-            //.orElseThrow(() -> new RuntimeException("Resolved status not found"));
+            //.orElseThrow(() -> new ResourceNotFoundException("Resolved status not found"));
         ticket.setTicketStatus(resolvedStatus);
 
-        // Add log
+        
         TicketsLog log = new TicketsLog();
         log.setTicket(ticket);
         log.setLogDate(LocalDateTime.now());
