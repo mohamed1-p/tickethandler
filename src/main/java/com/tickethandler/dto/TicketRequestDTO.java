@@ -1,0 +1,23 @@
+package com.tickethandler.dto;
+
+
+
+import lombok.Data;
+
+@Data
+public class TicketRequestDTO {
+
+    private int requesterId;
+    private int companyId;
+    private int ticketTypeId;
+    private int productId;
+    private String ticketSummary;
+    private String ticketDetails;
+    private int ticketPriority;
+
+    //enums 
+    /*
+     * requester
+     */
+   
+}
