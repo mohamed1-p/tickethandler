@@ -26,20 +26,22 @@ import com.tickethandler.service.TicketServiceImpl;
 @RestController
 @RequestMapping("api/tickets")
 public class TicketController {
+	
     @Autowired
     private TicketServiceImpl ticketService;
     
     
-    
+    //needs dto for response
     @GetMapping("/by-company")
-    public ResponseEntity<List<Ticket>> getTicketsByCompanyName(@RequestParam String companyName) {
-        List<Ticket> tickets = ticketService.getTicketsByCompanyName(companyName);
+    public ResponseEntity<List<TicketResponse>> getTicketsByCompanyName(@RequestParam String companyName) {
+        List<TicketResponse> tickets = ticketService.getTicketsByCompanyName(companyName);
         return ResponseEntity.ok(tickets);
     }
 
+    //needs DTO for response
     @GetMapping("/by-product")
-    public ResponseEntity<List<Ticket>> getTicketsByProductName(@RequestParam String productName) {
-        List<Ticket> tickets = ticketService.getTicketsByProductName(productName);
+    public ResponseEntity<List<TicketResponse>> getTicketsByProductName(@RequestParam String productName) {
+        List<TicketResponse> tickets = ticketService.getTicketsByProductName(productName);
         return ResponseEntity.ok(tickets);
     }    
     

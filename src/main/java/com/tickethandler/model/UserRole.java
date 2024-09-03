@@ -1,9 +1,7 @@
 package com.tickethandler.model;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -16,16 +14,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="requesterroles")
-public class ReqeusterRole {
+@Table(name ="role")
+public class UserRole {
 	
 	@Id
 	@GeneratedValue( strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private int id;
 	private String role;
-	
-	
-	
-	
+
 }

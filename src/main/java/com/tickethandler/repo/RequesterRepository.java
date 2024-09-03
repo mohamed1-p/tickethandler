@@ -7,9 +7,9 @@ import org.springframework.stereotype.Repository;
 
 import com.tickethandler.model.Requester;
 
-@Repository
+//@Repository
 public interface RequesterRepository extends JpaRepository<Requester, Integer>{
 
-	Boolean existsByrequesterEmail(String email);
-	Optional<Requester> findByrequesterEmail(String Email); 
+	//Boolean existsByrequesterEmail(String email);
+	//Optional<Requester> findByrequesterEmail(String Email); 
 }
