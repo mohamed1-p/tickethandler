@@ -31,7 +31,7 @@ public class TicketController {
     private TicketServiceImpl ticketService;
     
     
-    //needs dto for response
+   
     @GetMapping("/by-company")
     public ResponseEntity<List<TicketResponse>> getTicketsByCompanyName(@RequestParam String companyName) {
         List<TicketResponse> tickets = ticketService.getTicketsByCompanyName(companyName);
@@ -50,8 +50,6 @@ public class TicketController {
     @PostMapping("/create")
     public ResponseEntity<TicketResponse> createTicket(@RequestBody TicketRequestDTO ticketRequest) {
     	TicketResponse createdTicket = ticketService.createTicket(
-            ticketRequest.getRequesterId(),
-            ticketRequest.getCompanyId(),
             ticketRequest.getTicketTypeId(),
             ticketRequest.getProductId(),
             ticketRequest.getTicketSummary(),

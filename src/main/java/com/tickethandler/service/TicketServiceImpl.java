@@ -86,7 +86,7 @@ public class TicketServiceImpl implements TicketService {
 
 
     //@Transactional
-    public TicketResponse createTicket(int requesterId, int companyId, int ticketTypeId,
+    public TicketResponse createTicket( int ticketTypeId,
     		int productId, String ticketSummary, String ticketDetails, int ticketPriority) {
         // Fetch the required entities from the repository
     	
