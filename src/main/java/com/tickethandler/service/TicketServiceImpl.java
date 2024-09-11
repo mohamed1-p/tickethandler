@@ -128,11 +128,13 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Transactional
-    public TicketResolverDto assignTicket(Long ticketNo, int engineerId) {
+    public TicketResolverDto assignTicket(Long ticketNo) {
         Ticket ticket = ticketRepository.findById(ticketNo)
             .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
-        SupportEngineer engineer = (SupportEngineer) userRepository.findById(engineerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Support Engineer not found"));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        SupportEngineer engineer = (SupportEngineer) userRepository.findByemail(username).
+        		orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         ticket.setAssigendTo(engineer);
         
@@ -164,11 +166,15 @@ public class TicketServiceImpl implements TicketService {
     
     
     @Transactional
-    public TicketResolveResponse resolveTicketAndAddLog(Long ticketNo, int engineerId, String logDetails) {
+    public TicketResolveResponse resolveTicketAndAddLog(Long ticketNo, String logDetails) {
         Ticket ticket = ticketRepository.findById(ticketNo)
             .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
-        SupportEngineer engineer = (SupportEngineer) userRepository.findById(engineerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Support Engineer not found"));
+        
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        SupportEngineer engineer = (SupportEngineer) userRepository.findByemail(username).
+        		orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
 
         
         ticket.setResolvedBy(engineer);
@@ -195,6 +201,11 @@ public class TicketServiceImpl implements TicketService {
         return ticketResponse;
     }
     
+    public void deleteTicket(long ticketNo) {
+    	Ticket ticket = ticketRepository.findById(ticketNo)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
+    	ticketRepository.delete(ticket);
+    }
     
     private TicketResponse mapTicketToResponse(Ticket ticket) {
     	

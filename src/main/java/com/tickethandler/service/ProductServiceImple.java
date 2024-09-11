@@ -2,6 +2,7 @@ package com.tickethandler.service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -17,7 +18,7 @@ import com.tickethandler.model.Product;
 import com.tickethandler.repo.CompanyRepository;
 import com.tickethandler.repo.ProductRepository;
 
-import jakarta.persistence.EntityNotFoundException;
+import javax.persistence.EntityNotFoundException;
 
 @Service
 public class ProductServiceImple implements ProductService {
@@ -39,7 +40,8 @@ public class ProductServiceImple implements ProductService {
 		Product product = new Product();
 		product.setProductName(productDto.getProductName());
 		
-		Company company = companyRepository.findById(productDto.getCompanyId()).orElseThrow();
+		Company company = companyRepository.findById(productDto.getCompanyId())
+				.orElseThrow(()-> new RuntimeException());
 		
 		
 		company.getCompanyProducts().add(product);
@@ -68,7 +70,7 @@ public class ProductServiceImple implements ProductService {
 		Company company = companyRepository.findById(companyId)
 	            .orElseThrow(() -> new EntityNotFoundException("Company not found")); 
 		
-		 List<Product> products = company.getCompanyProducts();
+		 Set<Product> products = company.getCompanyProducts();
 //		 Pageable pageable = PageRequest.of(pageNo, pageSize);
 //		 Page<Product> productPage = companyRepository.findProductBycompanyId(companyId, pageable);
 //		 List<Product> products = productPage.getContent();
@@ -125,13 +127,7 @@ public class ProductServiceImple implements ProductService {
     }
 	
 	
-	private CompanyDto mapCompanyToDto(Company company) {
-		CompanyDto dto = new CompanyDto();
-		dto.setId(company.getCompanyId());
-		dto.setName(company.getCompanyName());
-		dto.setProducts(company.getCompanyProducts().toString());
-		return dto;
-	}
+	
 	
 	
 	

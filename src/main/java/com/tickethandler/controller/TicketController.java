@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,14 +32,13 @@ public class TicketController {
     private TicketServiceImpl ticketService;
     
     
-   
     @GetMapping("/by-company")
     public ResponseEntity<List<TicketResponse>> getTicketsByCompanyName(@RequestParam String companyName) {
         List<TicketResponse> tickets = ticketService.getTicketsByCompanyName(companyName);
         return ResponseEntity.ok(tickets);
     }
 
-    //needs DTO for response
+    
     @GetMapping("/by-product")
     public ResponseEntity<List<TicketResponse>> getTicketsByProductName(@RequestParam String productName) {
         List<TicketResponse> tickets = ticketService.getTicketsByProductName(productName);
@@ -62,9 +62,8 @@ public class TicketController {
       
     
     @PutMapping("/{ticketNo}/assign")
-    public ResponseEntity<TicketResolverDto> assignTicket(@PathVariable Long ticketNo, @RequestBody Map<String, Integer> request) {
-        int engineerId = request.get("engineerId");
-        TicketResolverDto assignedTicket = ticketService.assignTicket(ticketNo, engineerId);
+    public ResponseEntity<TicketResolverDto> assignTicket(@PathVariable Long ticketNo) {
+        TicketResolverDto assignedTicket = ticketService.assignTicket(ticketNo);
         return ResponseEntity.ok(assignedTicket);
     }
     
@@ -72,10 +71,15 @@ public class TicketController {
     public ResponseEntity<TicketResolveResponse> resolveTicketAndAddLog(@PathVariable Long ticketNo, @RequestBody ResolveTicketRequest request) {
     	TicketResolveResponse resolvedTicket = ticketService.resolveTicketAndAddLog(
             ticketNo,
-            request.getEngineerId(),
             request.getLogDetails()
         );
         return ResponseEntity.ok(resolvedTicket);
+    }
+    
+    @DeleteMapping("/{ticketNo}/delete")
+    public ResponseEntity<Void> deleteTicket(@PathVariable Long ticketNo) {
+        ticketService.deleteTicket(ticketNo);
+        return new ResponseEntity<Void>(HttpStatus.ACCEPTED);
     }
     
 

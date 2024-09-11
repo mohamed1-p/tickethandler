@@ -5,13 +5,10 @@ package com.tickethandler.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -38,47 +35,25 @@ public class SecurityConfig{
 
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity http)throws Exception{
-	
-		http.authorizeHttpRequests(configurer ->
-		configurer
-				.requestMatchers(HttpMethod.POST,"/api/tickets/create").
-				hasAuthority("REQUESTER"));
-		http.authorizeHttpRequests(configurer ->
-		configurer
-				.requestMatchers(HttpMethod.GET,"/api/tickets/**").
-				authenticated());
-		
-		http.authorizeHttpRequests(configurer ->
-		configurer
-				.requestMatchers(HttpMethod.PUT,"/api/tickets/**").
-				hasAuthority("ENGINEER"));
-		
-		http.authorizeHttpRequests(configurer ->
-		configurer
-				.requestMatchers(HttpMethod.DELETE,"/api/tickets/**").
-				hasAuthority("ADMIN"));
-		
-		
-		http.authorizeHttpRequests(configurer-> configurer.requestMatchers(
-				HttpMethod.POST,"api/register/**").permitAll());
-		
-		http.authorizeHttpRequests(configurer-> configurer.requestMatchers(
-				HttpMethod.POST,"api/login").permitAll());
-		
-		http.authorizeHttpRequests(configurer ->
-		configurer
-				.requestMatchers("/api/company/**")
-				.authenticated());
-		http.authorizeHttpRequests(configurer ->
-		configurer
-				.requestMatchers("/api/product/**")
-				.authenticated());
+
+        http.authorizeRequests(requests -> requests
+                .antMatchers(HttpMethod.POST, "/api/tickets/create").hasAuthority("REQUESTER")
+                .antMatchers(HttpMethod.GET, "/api/tickets/**").authenticated()
+                .antMatchers(HttpMethod.PUT, "/api/tickets/**").hasAuthority("ENGINEER")
+                .antMatchers(HttpMethod.DELETE, "/api/tickets/**").hasAuthority("ADMIN")
+                .antMatchers(HttpMethod.POST, "/api/register/**").permitAll()
+                .antMatchers(HttpMethod.PUT, "/api/register/**").hasAuthority("ADMIN")
+                .antMatchers(HttpMethod.POST, "/api/login").permitAll()
+                .antMatchers("/api/company/**").authenticated()
+                .antMatchers("/api/product/**").authenticated()
+                .anyRequest().authenticated());
 		
 		
 	
 		http.addFilterBefore(jwtTokenFilter,UsernamePasswordAuthenticationFilter.class);
-		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-		.and().authenticationProvider(authenticationProvider);
+        http.sessionManagement(management -> management.
+        		sessionCreationPolicy(SessionCreationPolicy.STATELESS)).
+        authenticationProvider(authenticationProvider);
 		
 		http.csrf(csrf-> csrf.disable());
 		

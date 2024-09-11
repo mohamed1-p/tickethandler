@@ -2,6 +2,7 @@ package com.tickethandler.security;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +54,7 @@ public class ApplicationConfig {
 		}
 
 		
-		private Collection<GrantedAuthority> mapRolesToAutority(List<UserRole> roles){
+		private Collection<GrantedAuthority> mapRolesToAutority(Set<UserRole> roles){
 			return roles.stream().map(role -> new SimpleGrantedAuthority(role.getRole()))
 					.collect(Collectors.toList());
 		}

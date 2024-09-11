@@ -73,9 +73,11 @@ public class CompanyServiceImpl implements CompanyService{
 	
 	private CompanyDto mapCompanyToDto(Company company) {
 		CompanyDto dto = new CompanyDto();
-		dto.setId(company.getCompanyId());
-		dto.setName(company.getCompanyName());
-		dto.setProducts(company.getCompanyProducts().toString());
+		dto.setCompany_id(company.getCompanyId());
+		dto.setCompany_name(company.getCompanyName());
+		
+		company.getCompanyProducts().forEach(product -> 
+        dto.getProducts().add(product.getProductName()));
 		return dto;
 	}
 	

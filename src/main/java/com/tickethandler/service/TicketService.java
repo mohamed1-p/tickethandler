@@ -10,8 +10,8 @@ public interface TicketService {
 	
 
 	 public TicketResponse createTicket( int ticketTypeId, int productId, String ticketSummary, String ticketDetails, int ticketPriority);
-	 public TicketResolveResponse resolveTicketAndAddLog(Long ticketNo, int engineerId, String logDetails);
-	 public TicketResolverDto assignTicket(Long ticketNo, int engineerId);
+	 public TicketResolveResponse resolveTicketAndAddLog(Long ticketNo, String logDetails);
+	 public TicketResolverDto assignTicket(Long ticketNo);
 		   
 		    	   
 }
