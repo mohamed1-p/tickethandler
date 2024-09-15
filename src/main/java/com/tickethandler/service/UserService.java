@@ -9,6 +9,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,9 @@ import com.tickethandler.repo.UserRepository;
 import com.tickethandler.repo.UserRoleRepository;
 import com.tickethandler.security.JwtTokenProvider;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 @Service
 public class UserService {
 
@@ -71,7 +75,7 @@ public class UserService {
 		}
 		UserEntity user = mapRequesterToUser(registerDto);
 		UserRole roles = roleRepository.findByRole("REQUESTER").
-				orElseThrow(() -> new RuntimeException());
+				orElseThrow(() -> new ResourceNotFoundException("Cannot create an account for requester, please contact Admin"));
 		user.getRoles().add(roles);
 		userRepository.save(user);
 
@@ -81,10 +85,11 @@ public class UserService {
 	}
 
 	public AuthResponse authenticate(LoginDto userDto) {
-		authenticationManager
-				.authenticate(new UsernamePasswordAuthenticationToken(userDto.getEmail(), userDto.getPassword()));
+			authenticationManager
+					.authenticate(new UsernamePasswordAuthenticationToken(userDto.getEmail(), userDto.getPassword()));
 
-		UserEntity user = userRepository.findByemail(userDto.getEmail()).orElseThrow(() -> new RuntimeException());
+		UserEntity user = userRepository.findByemail(userDto.getEmail())
+				.orElseThrow(() -> new ResourceNotFoundException("User don't exist"+userDto.getEmail()));
 
 		String jwtToken = jwtTokenProvider.generateToken(user);
 
@@ -95,13 +100,13 @@ public class UserService {
 		
 		UserEntity newAdminUser = userRepository.findByemail(userEmail).
 				orElseThrow(()->
-				new UsernameNotFoundException("The user you want to make admin don't exist "+ userEmail)); 
+				new ResourceNotFoundException("The user you want to make admin don't exist ("+ userEmail+")")); 
 		boolean hasEngineerRole = newAdminUser.getRoles().stream()
 		        .anyMatch(role -> role.getRole().equals("ENGINEER"));
 		
 		if(hasEngineerRole) {
 			 UserRole adminRole = roleRepository.findByRole("ADMIN").
-		 				orElseThrow(() -> new RuntimeException("The role you are searching for doesn't exist"));
+		 				orElseThrow(() -> new ResourceNotFoundException("The role you are searching for doesn't exist"));
 				newAdminUser.getRoles().add(adminRole);
 				userRepository.save(newAdminUser);
 		}else {
@@ -110,25 +115,23 @@ public class UserService {
 		
 	}
 	
-	@PostConstruct
-    public void initializeDefaultUser() {
-        if (!userRepository.existsByemail("admin")) {
-        	SupportEngineer adminUser = new SupportEngineer();
-            adminUser.setEmail("admin");
-            adminUser.setPassword(passwordEncoder.encode("SDT234896517"));
-            adminUser.setFullName("admin engineer");
-            adminUser.setMobileNo("admin number");
-            UserRole firstRole = roleRepository.findByRole("ENGINEER").
-    				orElseThrow(() -> new RuntimeException());
-            adminUser.getRoles().add(firstRole);
-            UserRole secondRole = roleRepository.findByRole("ADMIN").
-    				orElseThrow(() -> new RuntimeException());
-            adminUser.getRoles().add(secondRole);
-            userRepository.save(adminUser);
-           
-        }
+	/*
+	 * @PostConstruct public void initializeDefaultUser() { if
+	 * (!userRepository.existsByemail("admin")) { SupportEngineer adminUser = new
+	 * SupportEngineer(); adminUser.setEmail("admin");
+	 * adminUser.setPassword(passwordEncoder.encode("SDT234896517"));
+	 * adminUser.setFullName("admin engineer");
+	 * adminUser.setMobileNo("admin number"); UserRole firstRole =
+	 * roleRepository.findByRole("ENGINEER"). orElseThrow(() -> new
+	 * RuntimeException()); adminUser.getRoles().add(firstRole); UserRole secondRole
+	 * = roleRepository.findByRole("ADMIN"). orElseThrow(() -> new
+	 * RuntimeException()); adminUser.getRoles().add(secondRole);
+	 * userRepository.save(adminUser);
+	 * 
+	 * }
+	 */
        
-	}
+	//}
 	
 	private UserEntity mapDtoToUser(EngineerRegisterDto registerDto) {
 

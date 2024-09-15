@@ -25,5 +25,6 @@ public class GlobalExceptionHandler {
 				HttpStatus.NOT_FOUND);
 	}
 	
+
 	
 }

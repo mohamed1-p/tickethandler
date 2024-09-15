@@ -60,7 +60,7 @@ public class ApplicationConfig {
 		}
 		
 		
-		//the data access object to fetch username and filers
+		
 		@Bean
 		 AuthenticationProvider authenticationProvider() {
 			DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.tickethandler.dto.CompanyDto;
 import com.tickethandler.dto.ProductDto;
 import com.tickethandler.dto.ResponsePage;
+import com.tickethandler.exception.ResourceNotFoundException;
 import com.tickethandler.model.Company;
 import com.tickethandler.model.Product;
 import com.tickethandler.repo.CompanyRepository;
@@ -41,7 +42,7 @@ public class ProductServiceImple implements ProductService {
 		product.setProductName(productDto.getProductName());
 		
 		Company company = companyRepository.findById(productDto.getCompanyId())
-				.orElseThrow(()-> new RuntimeException());
+				.orElseThrow(()-> new ResourceNotFoundException("Company not found"));
 		
 		
 		company.getCompanyProducts().add(product);
@@ -68,7 +69,7 @@ public class ProductServiceImple implements ProductService {
 	@Override
 	public List<ProductDto> getProductbyCompanyId(int companyId, int pageNo, int pageSize) {
 		Company company = companyRepository.findById(companyId)
-	            .orElseThrow(() -> new EntityNotFoundException("Company not found")); 
+	            .orElseThrow(() -> new ResourceNotFoundException("Company not found")); 
 		
 		 Set<Product> products = company.getCompanyProducts();
 //		 Pageable pageable = PageRequest.of(pageNo, pageSize);
