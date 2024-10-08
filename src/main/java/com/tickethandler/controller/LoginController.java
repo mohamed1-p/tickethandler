@@ -12,16 +12,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tickethandler.dto.AuthResponse;
+import com.tickethandler.dto.ChangePasswordRequest;
 import com.tickethandler.dto.LoginDto;
 import com.tickethandler.service.UserService;
 
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
 
 @RestController
-@RequestMapping("api/login")
+@RequestMapping("api/")
 public class LoginController {
 
 	
@@ -38,11 +40,19 @@ public class LoginController {
 	
 	
 	
-	@PostMapping("")
+	@PostMapping("login")
     public ResponseEntity<AuthResponse> authenticateUser(@RequestBody LoginDto LoginDto) {
       
 		return ResponseEntity.ok(userService.authenticate(LoginDto));
     }
+	
+	@PutMapping("change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
+        
+		return userService.changePassword(request);
+        
+    }
+
 	
 	
 	

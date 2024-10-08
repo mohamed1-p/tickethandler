@@ -8,5 +8,6 @@ public interface CompanyService {
 	public CompanyDto createCompany(String companyName);
 	public ResponsePage<CompanyDto> getAllCompanies(int pageNo, int pageSize);
 	public ResponsePage<CompanyDto> getCompanyByName(String companyName,int pageNo,int pageSize);
+	public CompanyDto getCompanyByid();
 	
 }

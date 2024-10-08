@@ -13,9 +13,5 @@ public class TicketRequestDTO {
     private String ticketDetails;
     private int ticketPriority;
 
-    //enums 
-    /*
-     * requester
-     */
-   
+    
 }

@@ -35,18 +35,31 @@ public class ProductController {
 		 ResponsePage<ProductDto> products = productService.getAllProducts(pageNo,pageSize);
 	        return new ResponseEntity<>(products, HttpStatus.OK);
 	    }
-	
-	 @GetMapping("/by-company")
-	    public ResponseEntity<List<ProductDto>> getProductByCompany(
-	    		@RequestParam int companyId,
+	 
+	 @GetMapping("product-like-name")
+	    public ResponseEntity<ResponsePage<ProductDto>> getByProductAndCompanyName(
+	    		 @RequestParam String companyName,
+	    		 @RequestParam String productName,
 	    		 @RequestParam(value = "pageNo",defaultValue = "0")int pageNo,
 				 @RequestParam(value = "pageSize",defaultValue = "10")int pageSize) {
-		 List<ProductDto> products = productService.getProductbyCompanyId(companyId,pageNo,pageSize);
+		 ResponsePage<ProductDto> products = productService.
+				 getByProductAndCompanyNames(companyName,productName,pageNo,pageSize);
 	        return new ResponseEntity<>(products, HttpStatus.OK);
 	    }
+	 
+	 @GetMapping("/products")
+	    public ResponseEntity<List<ProductDto>> getProductsByUser(
+	    		 @RequestParam(value = "pageNo",defaultValue = "0")int pageNo,
+				 @RequestParam(value = "pageSize",defaultValue = "10")int pageSize) {
+	        List<ProductDto> products= productService.getProductbyCompanyId(pageNo,pageSize) ;
+	       
+	        return new ResponseEntity<>(products, HttpStatus.OK);
+	    }
+	
+	 
+	 
 	 @PostMapping("/create")
 	    public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto dto) {
-		 System.out.println("int the controller");
 		 ProductDto createdProduct = productService.createProduct(dto);
 		
 	        return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);

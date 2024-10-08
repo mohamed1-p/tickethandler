@@ -14,6 +14,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.tickethandler.exception.AuthEntryPoint;
+import com.tickethandler.exception.CustomAccessDeniedHandler;
 
 
 
@@ -27,14 +28,16 @@ public class SecurityConfig{
 	private  JwtTokenFilter jwtTokenFilter;
 	private  AuthenticationProvider authenticationProvider;
 	private AuthEntryPoint authEntryPoint;
+	private CustomAccessDeniedHandler accessDeniedHandler;
 	
 	
 	public SecurityConfig(JwtTokenFilter jwtTokenFilter, 
 			AuthenticationProvider authenticationProvider,
-			AuthEntryPoint authEntryPoint) {
+			AuthEntryPoint authEntryPoint,CustomAccessDeniedHandler accessDeniedHandler) {
 		this.jwtTokenFilter = jwtTokenFilter;
 		this.authenticationProvider = authenticationProvider;
 		this.authEntryPoint=authEntryPoint;
+		this.accessDeniedHandler=accessDeniedHandler;
 	}
 
 
@@ -43,17 +46,18 @@ public class SecurityConfig{
 
         http.csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.disable())
-                .exceptionHandling(handling -> handling.authenticationEntryPoint(authEntryPoint))
+                .exceptionHandling(handling -> handling.authenticationEntryPoint(authEntryPoint)
+                				.accessDeniedHandler(accessDeniedHandler))
                 .authorizeRequests(requests -> requests
                         .antMatchers(HttpMethod.POST, "/api/tickets/create").hasAnyAuthority("REQUESTER", "ADMIN")
-                        .antMatchers(HttpMethod.GET, "/api/tickets/**").authenticated()
+                        .antMatchers(HttpMethod.GET, "/api/tickets/**").hasAnyAuthority("ENGINEER", "ADMIN")
                         .antMatchers(HttpMethod.PUT, "/api/tickets/**").hasAnyAuthority("ENGINEER", "ADMIN")
                         .antMatchers(HttpMethod.DELETE, "/api/tickets/**").hasAuthority("ADMIN")
-                        .antMatchers(HttpMethod.POST, "/api/register/**").permitAll()
-                        .antMatchers(HttpMethod.PUT, "/api/register/**").hasAuthority("ADMIN")
+                        .antMatchers(HttpMethod.PUT, "/api/admin/**").hasAuthority("ADMIN")
+                        .antMatchers(HttpMethod.POST, "/api/admin/**").hasAuthority("ADMIN")
                         .antMatchers(HttpMethod.POST, "/api/login").permitAll()
-                        .antMatchers("/api/company/**").authenticated()
-                        .antMatchers("/api/product/**").authenticated()
+                        .antMatchers("/api/company/companies").hasAuthority("ADMIN")
+                        .antMatchers("/api/product").hasAuthority("ADMIN")
                         .anyRequest().authenticated());
 		
 		

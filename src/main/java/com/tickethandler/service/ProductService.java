@@ -11,6 +11,7 @@ public interface ProductService {
 
 	public ProductDto createProduct(ProductDto productDto);
 	public ResponsePage<ProductDto> getAllProducts(int pageNo, int pageSize);
-	public List<ProductDto> getProductbyCompanyId(int companyId, int pageNo, int pageSize);
-	
+	public List<ProductDto> getProductbyCompanyId(int pageNo, int pageSize);
+	public ResponsePage<ProductDto> getByProductAndCompanyNames(String companyName,
+			String productName,int pageNo, int pageSize);
 }

@@ -20,6 +20,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.tickethandler.exception.ResourceNotFoundException;
 import com.tickethandler.model.UserEntity;
 import com.tickethandler.model.UserRole;
 import com.tickethandler.repo.UserRepository;
@@ -45,7 +46,7 @@ public class ApplicationConfig {
 				@Override
 				public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 					UserEntity user = userRepository.findByemail(username).
-							orElseThrow(() -> new UsernameNotFoundException("user not found"));
+							orElseThrow(() -> new ResourceNotFoundException("user not found"));
 					
 					return new User(user.getEmail(),user.getPassword(),
 							mapRolesToAutority(user.getRoles()));

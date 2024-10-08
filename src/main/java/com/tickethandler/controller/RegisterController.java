@@ -11,11 +11,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tickethandler.dto.AuthResponse;
 import com.tickethandler.dto.EngineerRegisterDto;
-
+import com.tickethandler.dto.EngineerShowDto;
 import com.tickethandler.dto.RegisterDto;
-
+import com.tickethandler.dto.ResponsePage;
 import com.tickethandler.service.UserService;
 
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 
 @RestController
-@RequestMapping("api/register")
+@RequestMapping("api/admin")
 public class RegisterController {
 
 	private UserService userService;
@@ -37,16 +38,39 @@ public class RegisterController {
 
 	}
 
-	@PostMapping("")
-	public ResponseEntity<AuthResponse> registerNewRequester(@RequestBody RegisterDto registerDto) {
-
-		return ResponseEntity.ok(userService.createRequester(registerDto));
+	
+	@GetMapping("engineers")
+	public ResponseEntity<?> listAllEngineers(){
+		
+		return null;
+	}
+	
+	@PostMapping("/create-requester")
+	public ResponseEntity<?> registerNewRequester(@RequestBody RegisterDto registerDto) {
+		if(userService.createRequester(registerDto)==null) {
+			return new  ResponseEntity<>("User Already exists!",HttpStatus.BAD_REQUEST);
+		}
+		return new ResponseEntity<>("Register Success!",HttpStatus.OK);
 	}
 
-	@PostMapping("/engineer")
-	public ResponseEntity<AuthResponse> registerNewEngineer(@RequestBody EngineerRegisterDto registerDto) {
+	@PostMapping("/create-engineer")
+	public ResponseEntity<?> registerNewEngineer(@RequestBody EngineerRegisterDto registerDto) {
 
-		return ResponseEntity.ok(userService.createEngineer(registerDto));
+		if(userService.createEngineer(registerDto)==null) {
+			return new ResponseEntity<>("User Already exists!",HttpStatus.BAD_REQUEST);
+		}
+		return new ResponseEntity<>("Register Success!",HttpStatus.OK);
+	}
+	
+	@GetMapping("/get-engineers")
+	public ResponseEntity<ResponsePage<EngineerShowDto>> getAllEngineers(@RequestParam String name, 
+			 @RequestParam(value = "pageNo",defaultValue = "0")int pageNo,
+			 @RequestParam(value = "pageSize",defaultValue = "10")int pageSize){
+		
+		ResponsePage<EngineerShowDto> engineers = userService.findEngineersByName(name, pageNo, pageSize);
+		return new ResponseEntity<>(engineers,HttpStatus.OK);
+				
+		
 	}
 	
 	@PutMapping("make-admin")
@@ -55,5 +79,7 @@ public class RegisterController {
 		userService.makeAdmin(email);
 		return new ResponseEntity<>(HttpStatus.ACCEPTED);
 	}
+	
+	
 
 }

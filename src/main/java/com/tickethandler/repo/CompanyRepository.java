@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import com.tickethandler.model.Company;
 import com.tickethandler.model.Product;
+import com.tickethandler.model.SupportEngineer;
 @Repository
 public interface CompanyRepository extends JpaRepository<Company, Integer>{
 
@@ -19,4 +20,5 @@ public interface CompanyRepository extends JpaRepository<Company, Integer>{
 //	 @Query("SELECT c.companyProducts FROM Company c WHERE c.id = :companyId")
 //	List<Product> findProductsBycompanyId(@Param("companyId")int companyId);
 	Page<Product> findProductBycompanyId(int companyId, Pageable pageable);
+	
 }

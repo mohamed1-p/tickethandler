@@ -21,6 +21,7 @@ import com.tickethandler.dto.TicketRequestDTO;
 import com.tickethandler.dto.TicketResolveResponse;
 import com.tickethandler.dto.TicketResolverDto;
 import com.tickethandler.dto.TicketResponse;
+import com.tickethandler.dto.TicketUpdateRequest;
 import com.tickethandler.model.Ticket;
 import com.tickethandler.service.TicketServiceImpl;
 
@@ -32,9 +33,10 @@ public class TicketController {
     private TicketServiceImpl ticketService;
     
     
+    //changed 
     @GetMapping("/by-company")
-    public ResponseEntity<List<TicketResponse>> getTicketsByCompanyName(@RequestParam String companyName) {
-        List<TicketResponse> tickets = ticketService.getTicketsByCompanyName(companyName);
+    public ResponseEntity<List<TicketResponse>> getTicketsByCompany() {
+        List<TicketResponse> tickets = ticketService.getTicketsByCompany();
         return ResponseEntity.ok(tickets);
     }
 
@@ -45,7 +47,26 @@ public class TicketController {
         return ResponseEntity.ok(tickets);
     }    
     
+//    @GetMapping("/list")
+//    public ResponseEntity<List<TicketResponse>> listTickets(
+//           
+//            @RequestParam(required = false) String status,
+//            @RequestParam(required = false) Long productId,
+//            @RequestParam(required = false) Boolean currentUserOnly
+//    ) {
+//        
+//        List<TicketResponse> tickets = ticketService.listTickets(status, productId, currentUserOnly);
+//        return ResponseEntity.ok(tickets);
+//    }
     
+    @PutMapping("/{ticketNo}/update")
+    public ResponseEntity<TicketResponse> updateTicket(
+            @PathVariable Long ticketNo,
+            @RequestBody TicketUpdateRequest updateRequest) {
+    	
+        TicketResponse updatedTicket = ticketService.updateTicket(ticketNo, updateRequest);
+        return ResponseEntity.ok(updatedTicket);
+    }
 
     @PostMapping("/create")
     public ResponseEntity<TicketResponse> createTicket(@RequestBody TicketRequestDTO ticketRequest) {

@@ -7,23 +7,31 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.tickethandler.dto.CompanyDto;
 import com.tickethandler.dto.ResponsePage;
 import com.tickethandler.model.Company;
 import com.tickethandler.model.Product;
+import com.tickethandler.model.Requester;
 import com.tickethandler.repo.CompanyRepository;
 import com.tickethandler.repo.ProductRepository;
+import com.tickethandler.repo.UserRepository;
 
 
 @Service
 public class CompanyServiceImpl implements CompanyService{
 	
 	private CompanyRepository companyRepository;
+	private UserRepository userRepository;
 	
-	public CompanyServiceImpl(CompanyRepository companyRepository){
+	public CompanyServiceImpl(CompanyRepository companyRepository,
+			 UserRepository userRepository){
 		this.companyRepository=companyRepository;
+		this.userRepository=userRepository;
 		
 	}
 
@@ -67,6 +75,22 @@ public class CompanyServiceImpl implements CompanyService{
 	}
 	
 	
+	@Override
+	public CompanyDto getCompanyByid() {
+		
+		 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	        String username = authentication.getName();
+	        Requester requester = (Requester)userRepository.findByemail(username).
+	        		orElseThrow(() -> new UsernameNotFoundException("User not found"));
+	        Company company = requester.getCompany();
+	        
+		
+		CompanyDto companyDto = mapCompanyToDto(company);
+		return companyDto;
+		
+		
+	}
+	
 	
 	
 	
@@ -94,6 +118,8 @@ public class CompanyServiceImpl implements CompanyService{
 		
 		return content;
 	}
+
+	
 
 
 }

@@ -11,6 +11,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.tickethandler.exception.ResourceNotFoundException;
+
 import lombok.extern.log4j.Log4j2;
 
 import javax.servlet.FilterChain;
@@ -57,10 +59,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 					
 					SecurityContextHolder.getContext().setAuthentication(authToken);
 				}
+			}else {
+				response.getWriter().write("credentials are wrong");
 			}
 			
 			
-		} catch (UsernameNotFoundException e) {
+		} catch (ResourceNotFoundException e) {
 			log.error("Username or email cannot be found ",e);
 			e.printStackTrace();
 		} catch (IOException e) {

@@ -12,9 +12,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tickethandler.dto.CompanyDto;
 import com.tickethandler.dto.TicketResolveResponse;
 import com.tickethandler.dto.TicketResolverDto;
 import com.tickethandler.dto.TicketResponse;
+import com.tickethandler.dto.TicketUpdateRequest;
 import com.tickethandler.exception.ResourceNotFoundException;
 import com.tickethandler.model.Company;
 import com.tickethandler.model.Product;
@@ -44,7 +46,8 @@ public class TicketServiceImpl implements TicketService {
     private TicketStatusRepository ticketStatusRepository;
     private UserRepository userRepository;
     private TicketsLogRepository ticketsLogRepository;
-    private CompanyRepository companyRepository;
+    private CompanyService companyService;
+    private ProductService productService;
     private TicketTypeRepository ticketTypeRepository;
     private ProductRepository productRepository;
     
@@ -52,22 +55,26 @@ public class TicketServiceImpl implements TicketService {
 	
     public TicketServiceImpl(TicketRepository ticketRepository, TicketStatusRepository ticketStatusRepository,
 			UserRepository userRepository, TicketsLogRepository ticketsLogRepository,
-			CompanyRepository companyRepository, TicketTypeRepository ticketTypeRepository,
+			CompanyService companyService, TicketTypeRepository ticketTypeRepository,
+			ProductService productService,
 			ProductRepository productRepository) {
 		this.ticketRepository = ticketRepository;
 		this.ticketStatusRepository = ticketStatusRepository;
 		this.userRepository = userRepository;
 		this.ticketsLogRepository = ticketsLogRepository;
-		this.companyRepository = companyRepository;
+		this.companyService = companyService;
+		this.productService=productService;
 		this.ticketTypeRepository = ticketTypeRepository;
 		this.productRepository = productRepository;
 	}
 
     
     
-    public List<TicketResponse> getTicketsByCompanyName(String companyName) {
+    public List<TicketResponse> getTicketsByCompany() {
     	
-    	List<Ticket> tickets = ticketRepository.findByCompany_CompanyName(companyName);
+    	CompanyDto company=companyService.getCompanyByid();
+    	List<Ticket> tickets = ticketRepository.
+    			findByCompany_CompanyName(company.getCompany_name());
     	List<TicketResponse> ticketDto = tickets.stream()
     			.map(this::mapTicketToResponse)
     			.collect(Collectors.toList());
@@ -201,6 +208,31 @@ public class TicketServiceImpl implements TicketService {
         return ticketResponse;
     }
     
+
+
+	public TicketResponse updateTicket(Long ticketNo, TicketUpdateRequest updateRequest) {
+		
+		Ticket ticket = ticketRepository.findById(ticketNo).orElseThrow(
+				()-> new ResourceNotFoundException("ticket with id: "+ticketNo+" doesn't exist"));
+
+		if(!updateRequest.getTicketDetails().isEmpty()||
+				!updateRequest.getTicketSummary().isEmpty()) {
+			if(!updateRequest.getTicketDetails().isEmpty()) {
+				ticket.setTicketDetails(updateRequest.getTicketDetails());
+			}
+			if(!updateRequest.getTicketSummary().isEmpty()) {
+				ticket.setTicketSummary(updateRequest.getTicketSummary());
+			}
+			
+			ticketRepository.save(ticket);
+		}else {
+			throw new RuntimeException("Empty parametars! can't update ticket");
+		}
+		
+		
+		return mapTicketToResponse(ticket);
+	}
+    
     public void deleteTicket(long ticketNo) {
     	Ticket ticket = ticketRepository.findById(ticketNo)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
@@ -218,6 +250,12 @@ public class TicketServiceImpl implements TicketService {
         
         return ticketDto;
     }
+
+
+
+
+
+
     
     
     

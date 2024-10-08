@@ -26,7 +26,7 @@ public class CompanyController {
 		this.companyService=companyService;
 	}
 	
-	 @GetMapping
+	 @GetMapping("/companies")
 	    public ResponseEntity<ResponsePage<CompanyDto>> getAllCompanies(
 	    		 @RequestParam(value = "pageNo",defaultValue = "0")int pageNo,
 				 @RequestParam(value = "pageSize",defaultValue = "10")int pageSize) {
@@ -34,6 +34,15 @@ public class CompanyController {
 	        return new ResponseEntity<>(companies, HttpStatus.OK);
 	    }
 	 
+	 
+	 @GetMapping("/user-company")
+	    public ResponseEntity<CompanyDto> getUserCompany( 
+	    		 @RequestParam(value = "pageNo",defaultValue = "0")int pageNo,
+				 @RequestParam(value = "pageSize",defaultValue = "10")int pageSize) {
+	       
+	        CompanyDto company = companyService.getCompanyByid();
+	        return new ResponseEntity<>(company, HttpStatus.OK);
+	    }
 	 
 	 
 	 @PostMapping("/create")
@@ -45,7 +54,7 @@ public class CompanyController {
 	 
 	 
 	 
-	 @GetMapping("/name")
+	 @GetMapping("/compnay-name-like")
 	    public ResponseEntity<ResponsePage<CompanyDto>> getCompanyById(@RequestParam String companyName,
 	    		 @RequestParam(value = "pageNo",defaultValue = "0")int pageNo,
 				 @RequestParam(value = "pageSize",defaultValue = "10")int pageSize) {
