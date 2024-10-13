@@ -1,13 +1,18 @@
 package com.tickethandler.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.persistence.criteria.Predicate;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -208,6 +213,20 @@ public class TicketServiceImpl implements TicketService {
         return ticketResponse;
     }
     
+    public List<TicketResponse> getFilteredTickets( String company, 
+    		String status, String product, boolean includeAllCompanyTickets,
+    		boolean includeAssignedTickets) {
+    	
+    	
+		Specification<Ticket> spec =filterTickets( company, status, product, includeAllCompanyTickets,
+				includeAssignedTickets);
+		List<Ticket> tickets = ticketRepository.findAll(spec);
+		 List<TicketResponse> ticketDto = tickets.stream()
+    			.map(this::mapTicketToResponse)
+    			.collect(Collectors.toList());
+		 return ticketDto;
+	}
+    
 
 
 	public TicketResponse updateTicket(Long ticketNo, TicketUpdateRequest updateRequest) {
@@ -251,9 +270,87 @@ public class TicketServiceImpl implements TicketService {
         return ticketDto;
     }
 
+	private Specification<Ticket> filterTickets( String company, 
+	        String status, String product, boolean includeAllCompanyTickets,
+	        boolean includeAssignedTickets) {
+		
+		return (root, query, cb) -> {
+		List<Predicate> predicates = new ArrayList<>();
+		
+		 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	        String username = authentication.getName();
+	        UserEntity userE = userRepository.findByemail(username).
+	        		orElseThrow(() -> new UsernameNotFoundException("User not found"));
+	        
+		if(userE instanceof SupportEngineer) {
+			
+			
+			if (company != null) {
+			System.out.println("in company = "+ company);
+				predicates.add(cb.equal(root.get("company").get("companyName"), company));
+				}
+			
+			 String engineerUsername = getLoggedInRequesterUsername();
+			 System.out.println("engineerUsername = "+ engineerUsername);
+			if (includeAssignedTickets ) {
+				System.out.println("is it true of false ::::: "+ includeAssignedTickets);
+				predicates.add(cb.equal(root.get("assigendTo").get("email"), engineerUsername));
+				}
+			
+			if (status != null && !status.equals("ALL")) {
+				System.out.println("status = "+status);
+				//TicketStatus statuses = ticketStatusRepository.findByStatusName(status);
+			predicates.add(cb.equal(root.get("ticketStatus").get("statusName"), status));
+			}
+			System.out.println("query"+ query);
+			System.out.println("cp"+cb);
+			System.out.println("root"+root.toString());
+			if (product != null && !product.equals("ALL")) {
+			
+			predicates.add(cb.equal(root.get("product").get("productName"), product));
+			}
+		}else {
+	
+		
+		 Requester requester = (Requester)userRepository.findByemail(username).
+	        		orElseThrow(() -> new UsernameNotFoundException("User not found"));
+		 Company requestercompany = requester.getCompany();
+			
+		predicates.add(cb.equal(root.get("company"), requestercompany));
+		
+		
+		 String requesterUsername = getLoggedInRequesterUsername();
+		
+		 
+        if (!includeAllCompanyTickets && requesterUsername != null) {
+            predicates.add(cb.equal(root.get("requester").get("email"), requesterUsername));
+        }
+		
+	
+		if (status != null && !status.equals("ALL")) {
+			//TicketStatus statuses = ticketStatusRepository.findByStatusName(status);
+		predicates.add(cb.equal(root.get("ticketStatus").get("statusName"), status));
+		}
+		
+		
+		if (product != null && !product.equals("ALL")) {
+		
+		predicates.add(cb.equal(root.get("product").get("productName"), product));
+		}
+		}
+		return cb.and(predicates.toArray(new Predicate[0]));
+		
+		};
+		}
 
 
-
+	private String getLoggedInRequesterUsername() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            return ((UserDetails) principal).getUsername(); // Assuming username is the requester's identifier
+        }
+        return null;
+    }
 
 
     

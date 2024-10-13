@@ -50,6 +50,7 @@ public class SecurityConfig{
                 				.accessDeniedHandler(accessDeniedHandler))
                 .authorizeRequests(requests -> requests
                         .antMatchers(HttpMethod.POST, "/api/tickets/create").hasAnyAuthority("REQUESTER", "ADMIN")
+                        .antMatchers(HttpMethod.GET, "/api/tickets/filter").hasAnyAuthority("ENGINEER", "ADMIN","REQUESTER")
                         .antMatchers(HttpMethod.GET, "/api/tickets/**").hasAnyAuthority("ENGINEER", "ADMIN")
                         .antMatchers(HttpMethod.PUT, "/api/tickets/**").hasAnyAuthority("ENGINEER", "ADMIN")
                         .antMatchers(HttpMethod.DELETE, "/api/tickets/**").hasAuthority("ADMIN")

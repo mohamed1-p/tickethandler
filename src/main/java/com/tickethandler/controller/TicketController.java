@@ -47,6 +47,17 @@ public class TicketController {
         return ResponseEntity.ok(tickets);
     }    
     
+    
+    @GetMapping("/filter")
+    public List<TicketResponse> filterTickets(@RequestParam(required = false) String company,
+                                      @RequestParam(required = false) String status,
+                                      @RequestParam(required = false) String product,
+                                      @RequestParam(defaultValue = "false") boolean includeAllCompanyTickets,
+                                      @RequestParam(defaultValue = "false") boolean includeAssignedTickets) {
+        return ticketService.getFilteredTickets( company, status, product, includeAllCompanyTickets,includeAssignedTickets);
+    }
+    
+    
 //    @GetMapping("/list")
 //    public ResponseEntity<List<TicketResponse>> listTickets(
 //           
