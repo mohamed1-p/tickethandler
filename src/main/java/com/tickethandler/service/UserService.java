@@ -6,34 +6,42 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.security.auth.message.callback.PrivateKeyCallback.Request;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
+
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tickethandler.dto.AuthResponse;
 import com.tickethandler.dto.ChangePasswordRequest;
 import com.tickethandler.dto.EngineerRegisterDto;
-import com.tickethandler.dto.EngineerShowDto;
 import com.tickethandler.dto.LoginDto;
-import com.tickethandler.dto.ProductDto;
+
 import com.tickethandler.dto.RegisterDto;
 import com.tickethandler.dto.ResponsePage;
+import com.tickethandler.dto.UserShowDto;
 import com.tickethandler.exception.ResourceNotFoundException;
 import com.tickethandler.model.Product;
 import com.tickethandler.model.Requester;
 import com.tickethandler.model.SupportEngineer;
+import com.tickethandler.model.Ticket;
 import com.tickethandler.model.UserEntity;
 import com.tickethandler.model.UserRole;
 import com.tickethandler.repo.CompanyRepository;
@@ -42,9 +50,8 @@ import com.tickethandler.repo.UserRoleRepository;
 
 import com.tickethandler.security.JwtTokenProvider;
 
-import lombok.extern.log4j.Log4j2;
 
-@Log4j2
+
 @Service
 public class UserService {
 
@@ -68,6 +75,7 @@ public class UserService {
 
 	}
 
+	@Transactional
 	public String createEngineer(EngineerRegisterDto engineer) {
 
 		if (userRepository.existsByemail(engineer.getEmail())) {
@@ -83,6 +91,7 @@ public class UserService {
 		return "Register Success!";
 	}
 
+	@Transactional
 	public String createRequester(RegisterDto registerDto) {
 		if (userRepository.existsByemail(registerDto.getEmail())) {
 			return null;
@@ -97,6 +106,35 @@ public class UserService {
 
 		return "Register Success!";
 	}
+	
+	
+	
+
+	 public ResponsePage<UserShowDto> getUsersFiltered(int pageNo,int pageSize,Integer companyId, Integer productId, String name) {
+	        Specification<UserEntity> spec =filterByCompanyProductAndName(companyId, productId, name);
+	        
+	    	Pageable pageable = PageRequest.of(pageNo, pageSize);
+	        Page<UserEntity> usersPage = userRepository.findAll(spec,pageable);
+	        List<UserEntity> users = usersPage.getContent();
+	        
+	        List<UserShowDto> userDto = users.stream()
+	                .map(user -> {
+	                    if (user instanceof Requester) {
+	                        
+	                        return maptoRequesterDto((Requester) user);
+	                    } else{
+	                       
+	                        return maptoEngineerDto(user);
+	                    } 
+	                })
+	                .collect(Collectors.toList());
+	        
+	        
+	        return mapDtoToPage(usersPage,userDto);
+	    }
+    
+    
+    
 
 	public AuthResponse authenticate(LoginDto userDto) {
 		
@@ -114,13 +152,13 @@ public class UserService {
 	}
 	
 	
-	public ResponsePage<EngineerShowDto> findEngineersByName(String name,int pageNo, int pageSize){
+	public ResponsePage<UserShowDto> findEngineersByName(String name,int pageNo, int pageSize){
 	
 		Pageable pageable = PageRequest.of(pageNo, pageSize);
 		Page<SupportEngineer> usersPage = userRepository.findByFullNameContaining(name, pageable);
 		List<SupportEngineer> users = usersPage.getContent();
 		
-		List<EngineerShowDto> engineerDto = users.stream()
+		List<UserShowDto> engineerDto = users.stream()
 				.map(this::maptoEngineerDto)
 				.collect(Collectors.toList());
 		
@@ -213,18 +251,33 @@ public class UserService {
 	}
 	
 	
-	private EngineerShowDto maptoEngineerDto(UserEntity user) {
-		EngineerShowDto engineer = new EngineerShowDto();
-		engineer.setEmail(user.getEmail());
-		engineer.setName(user.getFullName());
-		engineer.setPhone_number(user.getMobileNo());
-		return engineer;
+	private UserShowDto maptoEngineerDto(UserEntity user) {
+		
+		UserShowDto userDto = new UserShowDto();
+		userDto.setEmail(user.getEmail());
+		userDto.setName(user.getFullName());
+		userDto.setPhone_number(user.getMobileNo());
+		userDto.setType("Engineer");
+		userDto.setCompanyName(" ");
+		
+		return userDto;
+		
+	}
+	private UserShowDto maptoRequesterDto(Requester user) {
+		
+		UserShowDto userDto = new UserShowDto();
+		userDto.setEmail(user.getEmail());
+		userDto.setName(user.getFullName());
+		userDto.setPhone_number(user.getMobileNo());
+		userDto.setType("Requester");
+		userDto.setCompanyName(user.getCompany().getCompanyName());
+		return userDto;
 		
 	}
 	
-	private ResponsePage<EngineerShowDto> mapDtoToPage(Page<SupportEngineer> engineer,
-			List<EngineerShowDto> dto){
-		ResponsePage<EngineerShowDto> content = new ResponsePage<>();
+	private ResponsePage<UserShowDto> mapDtoToPage(Page<?> engineer,
+			List<UserShowDto> dto){
+		ResponsePage<UserShowDto> content = new ResponsePage<>();
 		
 		content.setContent(dto);
 		content.setPage(engineer.getNumber());
@@ -236,6 +289,39 @@ public class UserService {
 		return content;
 	}
 
+	 public static Specification<UserEntity> filterByCompanyProductAndName(Integer companyId, Integer productId, String name) {
+	        return (root, query, criteriaBuilder) -> {
+	            Predicate predicate = criteriaBuilder.conjunction();
+	            
+	           
+	            if (companyId != null) {
+	            	Root<Requester> requesterRoot = criteriaBuilder.treat(root, Requester.class);
+	                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(requesterRoot.get("company").get("companyId"), companyId));
+	            }
+	            
+	            
+	            if (productId != null) {
+	            	  //Join<Requester, Ticket> ticketJoin = requesterRoot.join("tickets"); // Assuming "tickets" is a collection in Requester
+	                //  predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(ticketJoin.get("product").get("id"), productId));
+	            	Root<Requester> requesterRoot = criteriaBuilder.treat(root, Requester.class); 
+	            	Join<Requester, Ticket> ticketJoin = requesterRoot.join("tickets");
+
+	                 
+	                 Join<Ticket, Product> productJoin = ticketJoin.join("product");
+	                 
+	                
+	                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(productJoin.get("productId"), productId));
+	            }
+	            
+	            
+	            if (name != null && !name.isEmpty()) {
+	                predicate = criteriaBuilder.and(predicate, 
+	                    criteriaBuilder.like(criteriaBuilder.lower(root.get("fullName")), "%" + name.toLowerCase() + "%"));
+	            }
+	            
+	            return predicate;
+	        };
+	    }
 	
 
 }

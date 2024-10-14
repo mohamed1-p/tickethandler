@@ -227,6 +227,13 @@ public class TicketServiceImpl implements TicketService {
 		 return ticketDto;
 	}
     
+    public void setPending(Long ticketId) {
+    	Ticket ticket = ticketRepository.findById(ticketId).orElseThrow(
+    			()-> new ResourceNotFoundException("Ticket not found! ID:"+ticketId));
+    	TicketStatus status = ticketStatusRepository.findByStatusName("Pending for client");
+    	ticket.setTicketStatus(status);
+    	ticketRepository.save(ticket);
+    }
 
 
 	public TicketResponse updateTicket(Long ticketNo, TicketUpdateRequest updateRequest) {

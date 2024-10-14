@@ -79,6 +79,16 @@ public class TicketController {
         return ResponseEntity.ok(updatedTicket);
     }
 
+    @PutMapping("/pending-ticket")
+    public ResponseEntity<?> setAsPending(@RequestParam Long ticketId){
+    	try {
+			ticketService.setPending(ticketId);
+			return  ResponseEntity.ok("Successful");
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+    }
+    
     @PostMapping("/create")
     public ResponseEntity<TicketResponse> createTicket(@RequestBody TicketRequestDTO ticketRequest) {
     	TicketResponse createdTicket = ticketService.createTicket(
